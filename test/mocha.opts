@@ -1,0 +1,4 @@
+--require should
+--check-leaks
+--recursive
+--reporter spec
