@@ -16,116 +16,105 @@ describe('RedisGCRA', function() {
     return this.redis.flushdb();
   });
 
-  it('should perform basic limit and regen', function() {
+  it('should perform basic limit and regen', async function() {
     const opts = { key: 'testKey', burst: 2, rate: 1, period: 1000, cost: 1 };
-    return this.limiter.limit(opts)
-      .then((result) => {
-        result.limited.should.equal(false);
-        result.remaining.should.equal(1);
-        result.retryIn.should.equal(0);
-        result.resetIn.should.be.within(990, 1000);
-        return this.limiter.limit(opts);
-      })
-      .then((result) => {
-        result.limited.should.equal(false);
-        result.remaining.should.equal(0);
-        result.retryIn.should.equal(0);
-        result.resetIn.should.be.within(1980, 2000);
-        return this.limiter.limit(opts);
-      })
-      .then((result) => {
-        result.limited.should.equal(true);
-        result.remaining.should.equal(0);
-        result.retryIn.should.be.within(870, 1000);
-        result.resetIn.should.be.within(1970, 2000);
-        return new Promise((fulfill) => {
-          setTimeout(fulfill, result.retryIn);
-        });
-      })
-      .then(() => {
-        return this.limiter.limit(opts);
-      })
-      .then((result) => {
-        result.limited.should.equal(false);
-        result.remaining.should.equal(0);
-        result.retryIn.should.equal(0);
-        result.resetIn.should.be.within(1960, 2000);
-      });
+    let result = await this.limiter.limit(opts);
+    result.limited.should.equal(false);
+    result.remaining.should.equal(1);
+    result.retryIn.should.equal(0);
+    result.resetIn.should.be.within(990, 1000);
+
+    result = await this.limiter.limit(opts);
+    result.limited.should.equal(false);
+    result.remaining.should.equal(0);
+    result.retryIn.should.equal(0);
+    result.resetIn.should.be.within(1980, 2000);
+
+    result = await this.limiter.limit(opts);
+    result.limited.should.equal(true);
+    result.remaining.should.equal(0);
+    result.retryIn.should.be.within(870, 1000);
+    result.resetIn.should.be.within(1970, 2000);
+
+    await new Promise((fulfill) => {
+      setTimeout(fulfill, result.retryIn);
+    });
+
+    result = await this.limiter.limit(opts);
+    result.limited.should.equal(false);
+    result.remaining.should.equal(0);
+    result.retryIn.should.equal(0);
+    result.resetIn.should.be.within(1960, 2000);
   });
 
-  it('limits different keys independently', function() {
-    return Promise.all([
+  it('limits different keys independently', async function() {
+    const results = await Promise.all([
       this.limiter.limit({ key: 'key1' }),
       this.limiter.limit({ key: 'key2' }),
       this.limiter.limit({ key: 'key1' })
-    ])
-      .then((results) => {
-        const key2Result = results[1];
-        key2Result.limited.should.equal(false);
-        key2Result.remaining.should.equal(59);
-        key2Result.retryIn.should.equal(0);
-        key2Result.resetIn.should.be.within(990, 1000);
+    ]);
 
-        let key1Result1 = results[0];
-        let key1Result2 = results[2];
-        // flip them if they executed in reverse order
-        if (key1Result1.remaining < key1Result2.remaining) {
-          key1Result1 = results[2];
-          key1Result2 = results[0];
-        }
+    const key2Result = results[1];
+    key2Result.limited.should.equal(false);
+    key2Result.remaining.should.equal(59);
+    key2Result.retryIn.should.equal(0);
+    key2Result.resetIn.should.be.within(990, 1000);
 
-        key1Result1.limited.should.equal(false);
-        key1Result1.remaining.should.equal(59);
-        key1Result1.retryIn.should.equal(0);
-        key1Result1.resetIn.should.be.within(990, 1000);
+    let key1Result1 = results[0];
+    let key1Result2 = results[2];
+    // flip them if they executed in reverse order
+    if (key1Result1.remaining < key1Result2.remaining) {
+      key1Result1 = results[2];
+      key1Result2 = results[0];
+    }
 
-        key1Result2.limited.should.equal(false);
-        key1Result2.remaining.should.equal(58);
-        key1Result2.retryIn.should.equal(0);
-        key1Result2.resetIn.should.be.within(1980, 2000);
-      });
+    key1Result1.limited.should.equal(false);
+    key1Result1.remaining.should.equal(59);
+    key1Result1.retryIn.should.equal(0);
+    key1Result1.resetIn.should.be.within(990, 1000);
+
+    key1Result2.limited.should.equal(false);
+    key1Result2.remaining.should.equal(58);
+    key1Result2.retryIn.should.equal(0);
+    key1Result2.resetIn.should.be.within(1980, 2000);
   });
 
-  it('respects key prefixes and defaults', function() {
+  it('respects key prefixes and defaults', async function() {
     const prefixed = RedisGCRA({ redis: this.redis, keyPrefix: 'hello', cost: 5 });
-    return Promise.all([
+    let results = await Promise.all([
       this.limiter.limit({ key: 'key1' }),
       prefixed.limit({ key: 'key1' }),
-    ])
-      .then((results) => {
-        const key1Result = results[0];
-        key1Result.limited.should.equal(false);
-        key1Result.remaining.should.equal(59);
-        key1Result.retryIn.should.equal(0);
-        key1Result.resetIn.should.be.within(990, 1000);
+    ]);
 
-        const prefixedResult = results[1];
-        prefixedResult.limited.should.equal(false);
-        prefixedResult.remaining.should.equal(55);
-        prefixedResult.retryIn.should.equal(0);
-        prefixedResult.resetIn.should.be.within(4990, 5000);
+    let key1Result = results[0];
+    key1Result.limited.should.equal(false);
+    key1Result.remaining.should.equal(59);
+    key1Result.retryIn.should.equal(0);
+    key1Result.resetIn.should.be.within(990, 1000);
 
-        return prefixed.reset({ key: 'key1' });
-      })
-      .then(() => {
-        return Promise.all([
-          this.limiter.peek({ key: 'key1' }),
-          prefixed.peek({ key: 'key1' }),
-        ]);
-      })
-      .then((results) => {
-        const key1Result = results[0];
-        key1Result.limited.should.equal(false);
-        key1Result.remaining.should.equal(59);
-        key1Result.retryIn.should.equal(0);
-        key1Result.resetIn.should.be.within(980, 1000);
+    let prefixedResult = results[1];
+    prefixedResult.limited.should.equal(false);
+    prefixedResult.remaining.should.equal(55);
+    prefixedResult.retryIn.should.equal(0);
+    prefixedResult.resetIn.should.be.within(4990, 5000);
 
-        const prefixedResult = results[1];
-        prefixedResult.limited.should.equal(false);
-        prefixedResult.remaining.should.equal(60);
-        prefixedResult.retryIn.should.equal(0);
-        prefixedResult.resetIn.should.equal(0);
-      });
+    await prefixed.reset({ key: 'key1' });
+    results = await Promise.all([
+      this.limiter.peek({ key: 'key1' }),
+      prefixed.peek({ key: 'key1' }),
+    ]);
+
+    key1Result = results[0];
+    key1Result.limited.should.equal(false);
+    key1Result.remaining.should.equal(59);
+    key1Result.retryIn.should.equal(0);
+    key1Result.resetIn.should.be.within(980, 1000);
+
+    prefixedResult = results[1];
+    prefixedResult.limited.should.equal(false);
+    prefixedResult.remaining.should.equal(60);
+    prefixedResult.retryIn.should.equal(0);
+    prefixedResult.resetIn.should.equal(0);
   });
 
   const testCases = [
@@ -140,7 +129,7 @@ describe('RedisGCRA', function() {
   ];
 
   testCases.forEach((row, index) => {
-    it(`calculates test case ${index} correctly`, function() {
+    it(`calculates test case ${index} correctly`, async function() {
       const promises = [];
       for (let i=0; i<row.repeat-1; i++) {
         promises.push(this.limiter.limit({
@@ -152,49 +141,44 @@ describe('RedisGCRA', function() {
         }));
       }
 
-      return Promise.all(promises)
-        .then(() => {
-          return this.limiter.limit({
-            key: 'testCase',
-            burst: row.burst,
-            rate: row.rate,
-            period: row.period,
-            cost: row.cost
-          });
-        })
-        .then((finalResult) => {
-          finalResult.remaining.should.equal(row.remaining);
-          finalResult.limited.should.equal(row.limited);
-        });
+      await Promise.all(promises);
+
+      const finalResult = await this.limiter.limit({
+        key: 'testCase',
+        burst: row.burst,
+        rate: row.rate,
+        period: row.period,
+        cost: row.cost
+      });
+
+      finalResult.remaining.should.equal(row.remaining);
+      finalResult.limited.should.equal(row.limited);
     });
   });
 
-  it('should not modify when using peek', function() {
-    return Promise.all([
+  it('should not modify when using peek', async function() {
+    let results = await Promise.all([
       this.limiter.peek({ key: 'key1' }),
       this.limiter.peek({ key: 'key1' }),
       this.limiter.peek({ key: 'key1' })
-    ])
-      .then((results) => {
-        results[0].should.deepEqual({ limited: false, remaining: 60, retryIn: 0, resetIn: 0 });
-        results[0].should.deepEqual(results[1]);
-        results[0].should.deepEqual(results[2]);
-        return this.limiter.limit({ key: 'key1' });
-      })
-      .then(() => {
-        return Promise.all([
-          this.limiter.peek({ key: 'key1' }),
-          this.limiter.peek({ key: 'key1' }),
-          this.limiter.peek({ key: 'key1' })
-        ]);
-      })
-      .then((results) => {
-        results[0].limited.should.equal(false);
-        results[0].remaining.should.equal(59);
-        results[0].retryIn.should.equal(0);
-        results[0].resetIn.should.be.within(980, 1000);
-        results[0].should.deepEqual(results[1]);
-        results[0].should.deepEqual(results[2]);
-      });
+    ]);
+    results[0].should.deepEqual({ limited: false, remaining: 60, retryIn: 0, resetIn: 0 });
+    results[0].should.deepEqual(results[1]);
+    results[0].should.deepEqual(results[2]);
+
+    await this.limiter.limit({ key: 'key1' });
+    results = await Promise.all([
+      this.limiter.peek({ key: 'key1' }),
+      this.limiter.peek({ key: 'key1' }),
+      this.limiter.peek({ key: 'key1' })
+    ]);
+
+    results[0].limited.should.equal(false);
+    results[0].remaining.should.equal(59);
+    results[0].retryIn.should.equal(0);
+    results[0].resetIn.should.be.within(980, 1000);
+    results[0].should.deepEqual(results[1]);
+    results[0].should.deepEqual(results[2]);
   });
+
 });

@@ -22,14 +22,14 @@
     "*.js": "esw"
   },
   "dependencies": {
+    "ioredis": "^3.0.0"
   },
   "devDependencies": {
-    "eslint-config-losant": "git+ssh://git@bitbucket.org/losant/eslint-config-losant.git#v1.1.28",
+    "eslint-config-losant": "git+ssh://git@bitbucket.org/losant/eslint-config-losant.git#v1.1.30",
     "husky": "^0.14.3",
-    "lint-staged": "^4.2.3",
+    "lint-staged": "^4.3.0",
     "mocha": "^4.0.1",
-    "should": "^13.1.2",
-    "ioredis": "^3.1.4"
+    "should": "^13.1.2"
   },
   "eslintConfig": {
     "extends": "losant/env/node"

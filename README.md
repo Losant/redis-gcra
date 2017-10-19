@@ -22,26 +22,25 @@ const RedisGCRA = require('redis-gcra');
 const redis = new Redis();
 const limiter = RedisGCRA({ redis });
 
-limiter.limit({
+let result = await limiter.limit({
   key: 'user/myUser@example.com',
   burst: 1000,
   rate: 1,
   period: 1000,
   cost: 2
-})
-  .then((result) => {
-    result.limited;   // => false - request should not be limited
-    result.remaining; // => 998   - remaining number of requests until limited
-    result.retry_in;  // => 0     - can retry without delay
-    result.reset_in;  // => ~2000 - in approximately 2 seconds rate limiter will completely reset
-  })
-  // call limit 500 more times in rapid succession and the 500th call will have:
-  .then((result) => {
-    result.limited;   // => true     - request should be limited
-    result.remaining; // => 0        - remaining number of requests until limited
-    result.retry_in;  // => ~2000    - can retry in approximately 2 seconds
-    result.reset_in;  // => ~1000000 - in approximately 1000 seconds rate limiter will completely reset
-  })
+});
+
+result.limited;   // => false - request should not be limited
+result.remaining; // => 998   - remaining number of requests until limited
+result.retry_in;  // => 0     - can retry without delay
+result.reset_in;  // => ~2000 - in approximately 2 seconds rate limiter will completely reset
+
+// call limit 500 more times in rapid succession and the 500th call will have:
+// result = await limiter.limit(....)
+result.limited;   // => true     - request should be limited
+result.remaining; // => 0        - remaining number of requests until limited
+result.retry_in;  // => ~2000    - can retry in approximately 2 seconds
+result.reset_in;  // => ~1000000 - in approximately 1000 seconds rate limiter will completely reset
 ```
 
 The implementation utilizes single key in Redis that matches the key you pass
@@ -51,10 +50,8 @@ call the reset method:
 ```js
 // Let's imagine 'user/myUser@example.com' is limited.
 // This will effectively reset limit for the key:
-limiter.reset({ key: 'overall-account/bob@example.com' })
-  .then(() => {
-    // limit is reset
-  });
+await limiter.reset({ key: 'overall-account/bob@example.com' })
+// limit is reset
 ```
 
 You call also retrieve the current state of rate limiter for particular key
@@ -62,18 +59,17 @@ without actually modifying the state. In order to do that, use the `peek`
 method:
 
 ```js
-limiter.peek({
+let result = await limiter.peek({
   key: 'user/myUser@example.com',
   burst: 1000,
   rate: 1,
   period: 1000
-})
-  .then((result) => {
-    result.limited;   // => false - request should not be limited
-    result.remaining; // => 1000  - remaining number of requests until limited
-    result.retry_in;  // => 0     - can retry without delay
-    result.reset_in;  // => 0     - the rate limiter is reset
-  })
+});
+
+result.limited;   // => false - request should not be limited
+result.remaining; // => 1000  - remaining number of requests until limited
+result.retry_in;  // => 0     - can retry without delay
+result.reset_in;  // => 0     - the rate limiter is reset
 ```
 
 ## Inspiration
