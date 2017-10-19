@@ -81,36 +81,28 @@ describe('RedisGCRA', function() {
 
   it('respects key prefixes and defaults', async function() {
     const prefixed = RedisGCRA({ redis: this.redis, keyPrefix: 'hello', cost: 5 });
-    let results = await Promise.all([
-      this.limiter.limit({ key: 'key1' }),
-      prefixed.limit({ key: 'key1' }),
-    ]);
 
-    let key1Result = results[0];
+    let key1Result = await this.limiter.limit({ key: 'key1' });
     key1Result.limited.should.equal(false);
     key1Result.remaining.should.equal(59);
     key1Result.retryIn.should.equal(0);
     key1Result.resetIn.should.be.within(990, 1000);
 
-    let prefixedResult = results[1];
+    let prefixedResult = await prefixed.limit({ key: 'key1' });
     prefixedResult.limited.should.equal(false);
     prefixedResult.remaining.should.equal(55);
     prefixedResult.retryIn.should.equal(0);
     prefixedResult.resetIn.should.be.within(4990, 5000);
 
     await prefixed.reset({ key: 'key1' });
-    results = await Promise.all([
-      this.limiter.peek({ key: 'key1' }),
-      prefixed.peek({ key: 'key1' }),
-    ]);
 
-    key1Result = results[0];
+    key1Result = await this.limiter.peek({ key: 'key1' });
     key1Result.limited.should.equal(false);
     key1Result.remaining.should.equal(59);
     key1Result.retryIn.should.equal(0);
     key1Result.resetIn.should.be.within(980, 1000);
 
-    prefixedResult = results[1];
+    prefixedResult = await prefixed.peek({ key: 'key1' });
     prefixedResult.limited.should.equal(false);
     prefixedResult.remaining.should.equal(60);
     prefixedResult.retryIn.should.equal(0);
@@ -157,28 +149,25 @@ describe('RedisGCRA', function() {
   });
 
   it('should not modify when using peek', async function() {
-    let results = await Promise.all([
-      this.limiter.peek({ key: 'key1' }),
-      this.limiter.peek({ key: 'key1' }),
-      this.limiter.peek({ key: 'key1' })
-    ]);
-    results[0].should.deepEqual({ limited: false, remaining: 60, retryIn: 0, resetIn: 0 });
-    results[0].should.deepEqual(results[1]);
-    results[0].should.deepEqual(results[2]);
+    [ await this.limiter.peek({ key: 'key1' }),
+      await this.limiter.peek({ key: 'key1' }),
+      await this.limiter.peek({ key: 'key1' })
+    ].forEach((result) => {
+      result.should.deepEqual({ limited: false, remaining: 60, retryIn: 0, resetIn: 0 });
+    });
 
     await this.limiter.limit({ key: 'key1' });
-    results = await Promise.all([
-      this.limiter.peek({ key: 'key1' }),
-      this.limiter.peek({ key: 'key1' }),
-      this.limiter.peek({ key: 'key1' })
-    ]);
 
-    results[0].limited.should.equal(false);
-    results[0].remaining.should.equal(59);
-    results[0].retryIn.should.equal(0);
-    results[0].resetIn.should.be.within(980, 1000);
-    results[0].should.deepEqual(results[1]);
-    results[0].should.deepEqual(results[2]);
+    [ await this.limiter.peek({ key: 'key1' }),
+      await this.limiter.peek({ key: 'key1' }),
+      await this.limiter.peek({ key: 'key1' })
+    ].forEach((result) => {
+      result.limited.should.equal(false);
+      result.remaining.should.equal(59);
+      result.retryIn.should.equal(0);
+      result.resetIn.should.be.within(980, 1000);
+    });
+
   });
 
 });
