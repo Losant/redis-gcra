@@ -5,13 +5,13 @@ This module is an implementation of [GCRA](https://en.wikipedia.org/wiki/Generic
 ## Installation
 
 ```bash
-npm install "redis-gcra"
+npm install redis-gcra
 ```
 
 or
 
 ```bash
-yarn install "redis-gcra"
+yarn install redis-gcra
 ```
 
 ## Usage
