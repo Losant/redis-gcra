@@ -13,7 +13,7 @@ yarn install "redis-gcra"
 In order to perform rate limiting, you need to call the `limit` method.
 
 In this example the rate limit bucket has 1000 tokens in it and recovers at
-speed of 100 tokens per minute.
+speed of 1 token per second.
 
 ```js
 const Redis     = require('ioredis');
