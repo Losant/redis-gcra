@@ -149,19 +149,21 @@ describe('RedisGCRA', function() {
   });
 
   it('should not modify when using peek', async function() {
-    [ await this.limiter.peek({ key: 'key1' }),
-      await this.limiter.peek({ key: 'key1' }),
-      await this.limiter.peek({ key: 'key1' })
-    ].forEach((result) => {
+    (await Promise.all([
+      this.limiter.peek({ key: 'key1' }),
+      this.limiter.peek({ key: 'key1' }),
+      this.limiter.peek({ key: 'key1' })
+    ])).forEach((result) => {
       result.should.deepEqual({ limited: false, remaining: 60, retryIn: 0, resetIn: 0 });
     });
 
     await this.limiter.limit({ key: 'key1' });
 
-    [ await this.limiter.peek({ key: 'key1' }),
-      await this.limiter.peek({ key: 'key1' }),
-      await this.limiter.peek({ key: 'key1' })
-    ].forEach((result) => {
+    (await Promise.all([
+      this.limiter.peek({ key: 'key1' }),
+      this.limiter.peek({ key: 'key1' }),
+      this.limiter.peek({ key: 'key1' })
+    ])).forEach((result) => {
       result.limited.should.equal(false);
       result.remaining.should.equal(59);
       result.retryIn.should.equal(0);
