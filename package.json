@@ -6,7 +6,7 @@
   "license": "MIT",
   "description": "Rate limiting based on Generic Cell Rate Algorithm",
   "engines": {
-    "node": ">=8.7"
+    "node": ">=8.3"
   },
   "scripts": {
     "lint": "esw *.js lib test",
@@ -22,7 +22,7 @@
     "*.js": "esw"
   },
   "dependencies": {
-    "ioredis": "^3.0.0"
+    "ioredis": ">=2.0.0"
   },
   "devDependencies": {
     "eslint-config-losant": "git+ssh://git@bitbucket.org/losant/eslint-config-losant.git#v1.1.30",

@@ -16,9 +16,9 @@ if not tat then
 else
   tat = tonumber(tat)
 end
+tat = math.max(tat, now)
 
-local new_tat = math.max(tat, now) + increment
-
+local new_tat = tat + increment
 local allow_at = new_tat - burst_offset
 local diff = now - allow_at
 
@@ -30,9 +30,19 @@ local remaining = math.floor(diff / emission_interval + 0.5) -- poor man's round
 
 if remaining < 0 then
   limited = 1
-  remaining = 0
+  -- calculate how many tokens there actually are, since
+  -- remaining is how many there would have been if we had been able to limit
+  -- and we did not limit
+  remaining = math.floor((now - (tat - burst_offset)) / emission_interval + 0.5)
   reset_in = math.ceil(tat - now)
   retry_in = math.ceil(diff * -1)
+elseif remaining == 0 and increment <= 0 then
+  -- request with cost of 0
+  -- cost of 0 with remaining 0 is still limited
+  limited = 1
+  remaining = 0
+  reset_in = math.ceil(tat - now)
+  retry_in = 0 -- retry in is meaningless when cost is 0
 else
   limited = 0
   reset_in = math.ceil(new_tat - now)

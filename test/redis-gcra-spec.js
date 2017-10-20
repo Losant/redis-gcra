@@ -17,10 +17,10 @@ describe('RedisGCRA', function() {
   });
 
   it('should perform basic limit and regen', async function() {
-    const opts = { key: 'testKey', burst: 2, rate: 1, period: 1000, cost: 1 };
+    const opts = { key: 'testKey', burst: 4, rate: 1, period: 500, cost: 2 };
     let result = await this.limiter.limit(opts);
     result.limited.should.equal(false);
-    result.remaining.should.equal(1);
+    result.remaining.should.equal(2);
     result.retryIn.should.equal(0);
     result.resetIn.should.be.within(990, 1000);
 
@@ -36,7 +36,26 @@ describe('RedisGCRA', function() {
     result.retryIn.should.be.within(870, 1000);
     result.resetIn.should.be.within(1970, 2000);
 
+    const peekResult = await this.limiter.peek({
+      key: 'testKey', burst: 2, rate: 1, period: 1000
+    });
+    peekResult.limited.should.equal(true);
+    peekResult.remaining.should.equal(0);
+    peekResult.resetIn.should.be.within(1960, 2000);
+
     await new Promise((fulfill) => {
+      // let it regenerate 1 token
+      setTimeout(fulfill, result.retryIn - 500);
+    });
+
+    result = await this.limiter.limit(opts);
+    result.limited.should.equal(true);
+    result.remaining.should.equal(1);
+    result.retryIn.should.be.within(450, 1000);
+    result.resetIn.should.be.within(1450, 1500);
+
+    await new Promise((fulfill) => {
+      // let it regenerate a 2nd token
       setTimeout(fulfill, result.retryIn);
     });
 
@@ -44,7 +63,7 @@ describe('RedisGCRA', function() {
     result.limited.should.equal(false);
     result.remaining.should.equal(0);
     result.retryIn.should.equal(0);
-    result.resetIn.should.be.within(1960, 2000);
+    result.resetIn.should.be.within(1990, 2000);
   });
 
   it('limits different keys independently', async function() {
@@ -94,30 +113,31 @@ describe('RedisGCRA', function() {
     prefixedResult.retryIn.should.equal(0);
     prefixedResult.resetIn.should.be.within(4990, 5000);
 
-    await prefixed.reset({ key: 'key1' });
+    const reset1 = await prefixed.reset({ key: 'key1' });
+    const reset2 = await prefixed.reset({ key: 'key1' });
+    reset1.should.be.true();
+    reset2.should.be.false();
 
     key1Result = await this.limiter.peek({ key: 'key1' });
     key1Result.limited.should.equal(false);
     key1Result.remaining.should.equal(59);
-    key1Result.retryIn.should.equal(0);
     key1Result.resetIn.should.be.within(980, 1000);
 
     prefixedResult = await prefixed.peek({ key: 'key1' });
     prefixedResult.limited.should.equal(false);
     prefixedResult.remaining.should.equal(60);
-    prefixedResult.retryIn.should.equal(0);
     prefixedResult.resetIn.should.equal(0);
   });
 
   const testCases = [
-    { burst: 4500, rate: 75,  period: 60000, cost: 1,    repeat: 1,   remaining: 4499, limited: false },
-    { burst: 4500, rate: 75,  period: 60000, cost: 1,    repeat: 2,   remaining: 4498, limited: false },
-    { burst: 4500, rate: 75,  period: 60000, cost: 2,    repeat: 1,   remaining: 4498, limited: false },
-    { burst: 1000, rate: 100, period: 60000, cost: 200,  repeat: 1,   remaining: 800,  limited: false },
-    { burst: 1000, rate: 100, period: 60000, cost: 200,  repeat: 4,   remaining: 200,  limited: false },
-    { burst: 1000, rate: 100, period: 60000, cost: 200,  repeat: 5,   remaining: 0,    limited: false },
-    { burst: 1000, rate: 100, period: 60000, cost: 1,    repeat: 137, remaining: 863,  limited: false },
-    { burst: 1000, rate: 100, period: 60000, cost: 1001, repeat: 1,   remaining: 0,    limited: true }
+    { burst: 4500, rate: 75,  period: 60000, cost: 1,    repeat: 1,   remaining: 4499, limited: false, retryIn: 0 },
+    { burst: 4500, rate: 75,  period: 60000, cost: 1,    repeat: 2,   remaining: 4498, limited: false, retryIn: 0 },
+    { burst: 4500, rate: 75,  period: 60000, cost: 2,    repeat: 1,   remaining: 4498, limited: false, retryIn: 0 },
+    { burst: 1000, rate: 100, period: 60000, cost: 200,  repeat: 1,   remaining: 800,  limited: false, retryIn: 0 },
+    { burst: 1000, rate: 100, period: 60000, cost: 200,  repeat: 4,   remaining: 200,  limited: false, retryIn: 0 },
+    { burst: 1000, rate: 100, period: 60000, cost: 200,  repeat: 5,   remaining: 0,    limited: false, retryIn: 0 },
+    { burst: 1000, rate: 100, period: 60000, cost: 1,    repeat: 137, remaining: 863,  limited: false, retryIn: 0 },
+    { burst: 1000, rate: 100, period: 60000, cost: 1001, repeat: 1,   remaining: 1000, limited: true,  retryIn: Infinity }
   ];
 
   testCases.forEach((row, index) => {
@@ -145,6 +165,7 @@ describe('RedisGCRA', function() {
 
       finalResult.remaining.should.equal(row.remaining);
       finalResult.limited.should.equal(row.limited);
+      finalResult.retryIn.should.equal(row.retryIn);
     });
   });
 
@@ -154,7 +175,7 @@ describe('RedisGCRA', function() {
       this.limiter.peek({ key: 'key1' }),
       this.limiter.peek({ key: 'key1' })
     ])).forEach((result) => {
-      result.should.deepEqual({ limited: false, remaining: 60, retryIn: 0, resetIn: 0 });
+      result.should.deepEqual({ limited: false, remaining: 60, resetIn: 0 });
     });
 
     await this.limiter.limit({ key: 'key1' });
@@ -166,7 +187,6 @@ describe('RedisGCRA', function() {
     ])).forEach((result) => {
       result.limited.should.equal(false);
       result.remaining.should.equal(59);
-      result.retryIn.should.equal(0);
       result.resetIn.should.be.within(980, 1000);
     });
 
