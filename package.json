@@ -12,7 +12,7 @@
     "lint": "esw *.js lib test",
     "lint:fix": "esw --fix *.js lib test",
     "lint:watch": "esw --watch *.js lib test",
-    "lint:changed": "lint-staged",
+    "lint:staged": "lint-staged",
     "test": "mocha --expose-gc test 2>&1",
     "test:watch": "mocha --expose-gc --watch test 2>&1",
     "reinstall": "rm -rf node_modules && yarn install",
@@ -25,13 +25,13 @@
     "ioredis": ">=2.0.0"
   },
   "devDependencies": {
-    "eslint-config-losant": "git+ssh://git@bitbucket.org/losant/eslint-config-losant.git#v1.1.30",
+    "@losant/eslint-config-losant": "^1.2.0",
     "husky": "^0.14.3",
     "lint-staged": "^4.3.0",
     "mocha": "^4.0.1",
     "should": "^13.1.2"
   },
   "eslintConfig": {
-    "extends": "losant/env/node"
+    "extends": "@losant/eslint-config-losant/env/node"
   }
 }
