@@ -2,6 +2,17 @@
 
 This module is an implementation of [GCRA](https://en.wikipedia.org/wiki/Generic_cell_rate_algorithm) for rate limiting based on [Redis](https://redis.io/).
 
+* [Installation](#installation)
+* [API Documentation](#api-documentation)
+  * [Initializer](#redisgcra-redis-keyprefix-burst-rate-period-cost-)
+  * [Instance Functions](#instance-functions)
+    * [reset](#limit-key-burst-rate-period-cost-)
+    * [peek](#peek-key-burst-rate-period-)
+    * [reset](#reset)
+* [Inspiration](#example)
+* [Inspiration](#inspiration)
+* [License](#license)
+
 ## Installation
 
 ```bash
