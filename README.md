@@ -6,7 +6,7 @@ This module is an implementation of [GCRA](https://en.wikipedia.org/wiki/Generic
 * [API Documentation](#api-documentation)
   * [Initializer](#redisgcra-redis-keyprefix-burst-rate-period-cost-)
   * [Instance Functions](#instance-functions)
-    * [reset](#limit-key-burst-rate-period-cost-)
+    * [limit](#limit-key-burst-rate-period-cost-)
     * [peek](#peek-key-burst-rate-period-)
     * [reset](#reset)
 * [Example](#example)
