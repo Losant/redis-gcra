@@ -9,7 +9,7 @@ This module is an implementation of [GCRA](https://en.wikipedia.org/wiki/Generic
     * [reset](#limit-key-burst-rate-period-cost-)
     * [peek](#peek-key-burst-rate-period-)
     * [reset](#reset)
-* [Inspiration](#example)
+* [Example](#example)
 * [Inspiration](#inspiration)
 * [License](#license)
 
