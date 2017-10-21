@@ -1,5 +1,7 @@
 # Node Redis GCRA Library
 
+[![Build Status](https://travis-ci.org/Losant/redis-gcra.svg?branch=master)](https://travis-ci.org/Losant/redis-gcra)
+
 This module is an implementation of [GCRA](https://en.wikipedia.org/wiki/Generic_cell_rate_algorithm) for rate limiting based on [Redis](https://redis.io/).
 
 * [Installation](#installation)
