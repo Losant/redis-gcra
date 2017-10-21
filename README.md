@@ -151,8 +151,8 @@ result.resetIn;   // => ~2000 - in approximately 2 seconds tokens will be regene
 
 // call limit 500 more times in rapid succession and the 500th call will have:
 // result = await limiter.limit(....)
-result.limited;   // => true     - request should be limited
-result.remaining; // => 0        - remaining number of tokens until limited
+result.limited;   // => true    - request should be limited
+result.remaining; // => 0       - remaining number of tokens until limited
 result.retryIn;   // => 2000    - can retry in approximately 2 seconds
 result.resetIn;   // => 1000000 - in approximately 1000 seconds tokens will be regenerated to burst limit
 ```
@@ -164,7 +164,7 @@ call the reset method:
 ```js
 // Let's imagine 'user/myUser@example.com' is limited.
 // This will effectively reset the limit for the key:
-await limiter.reset({ key: 'overall-account/bob@example.com' })
+await limiter.reset({ key: 'user/myUser@example.com' })
 // limit is reset
 ```
 
