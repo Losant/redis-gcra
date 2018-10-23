@@ -1,22 +1,22 @@
 const Redis     = require('ioredis');
 const RedisGCRA = require('../lib');
 
-describe('RedisGCRA', function() {
-  before(function() {
+describe('RedisGCRA', () => {
+  before(() => {
     this.redis = new Redis({ db: 4 });
     this.redis.on('error', (err) => { throw err; });
     this.limiter = RedisGCRA({ redis: this.redis });
   });
 
-  after(function() {
+  after(() => {
     return this.redis.quit();
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     return this.redis.flushdb();
   });
 
-  it('should perform basic limit and regen', async function() {
+  it('should perform basic limit and regen', async () => {
     const opts = { key: 'testKey', burst: 4, rate: 1, period: 500, cost: 2 };
     let result = await this.limiter.limit(opts);
     result.limited.should.equal(false);
@@ -66,7 +66,7 @@ describe('RedisGCRA', function() {
     result.resetIn.should.be.within(1990, 2000);
   });
 
-  it('limits different keys independently', async function() {
+  it('limits different keys independently', async () => {
     const results = await Promise.all([
       this.limiter.limit({ key: 'key1' }),
       this.limiter.limit({ key: 'key2' }),
@@ -98,7 +98,7 @@ describe('RedisGCRA', function() {
     key1Result2.resetIn.should.be.within(1980, 2000);
   });
 
-  it('respects key prefixes and defaults', async function() {
+  it('respects key prefixes and defaults', async () => {
     const prefixed = RedisGCRA({ redis: this.redis, keyPrefix: 'hello', cost: 5 });
 
     let key1Result = await this.limiter.limit({ key: 'key1' });
@@ -130,18 +130,90 @@ describe('RedisGCRA', function() {
   });
 
   const testCases = [
-    { burst: 4500, rate: 75,  period: 60000, cost: 1,    repeat: 1,   remaining: 4499, limited: false, retryIn: 0 },
-    { burst: 4500, rate: 75,  period: 60000, cost: 1,    repeat: 2,   remaining: 4498, limited: false, retryIn: 0 },
-    { burst: 4500, rate: 75,  period: 60000, cost: 2,    repeat: 1,   remaining: 4498, limited: false, retryIn: 0 },
-    { burst: 1000, rate: 100, period: 60000, cost: 200,  repeat: 1,   remaining: 800,  limited: false, retryIn: 0 },
-    { burst: 1000, rate: 100, period: 60000, cost: 200,  repeat: 4,   remaining: 200,  limited: false, retryIn: 0 },
-    { burst: 1000, rate: 100, period: 60000, cost: 200,  repeat: 5,   remaining: 0,    limited: false, retryIn: 0 },
-    { burst: 1000, rate: 100, period: 60000, cost: 1,    repeat: 137, remaining: 863,  limited: false, retryIn: 0 },
-    { burst: 1000, rate: 100, period: 60000, cost: 1001, repeat: 1,   remaining: 1000, limited: true,  retryIn: Infinity }
+    {
+      burst: 4500,
+      rate: 75,
+      period: 60000,
+      cost: 1,
+      repeat: 1,
+      remaining: 4499,
+      limited: false,
+      retryIn: 0
+    },
+    {
+      burst: 4500,
+      rate: 75,
+      period: 60000,
+      cost: 1,
+      repeat: 2,
+      remaining: 4498,
+      limited: false,
+      retryIn: 0
+    },
+    {
+      burst: 4500,
+      rate: 75,
+      period: 60000,
+      cost: 2,
+      repeat: 1,
+      remaining: 4498,
+      limited: false,
+      retryIn: 0
+    },
+    {
+      burst: 1000,
+      rate: 100,
+      period: 60000,
+      cost: 200,
+      repeat: 1,
+      remaining: 800,
+      limited: false,
+      retryIn: 0
+    },
+    {
+      burst: 1000,
+      rate: 100,
+      period: 60000,
+      cost: 200,
+      repeat: 4,
+      remaining: 200,
+      limited: false,
+      retryIn: 0
+    },
+    {
+      burst: 1000,
+      rate: 100,
+      period: 60000,
+      cost: 200,
+      repeat: 5,
+      remaining: 0,
+      limited: false,
+      retryIn: 0
+    },
+    {
+      burst: 1000,
+      rate: 100,
+      period: 60000,
+      cost: 1,
+      repeat: 137,
+      remaining: 863,
+      limited: false,
+      retryIn: 0
+    },
+    {
+      burst: 1000,
+      rate: 100,
+      period: 60000,
+      cost: 1001,
+      repeat: 1,
+      remaining: 1000,
+      limited: true,
+      retryIn: Infinity
+    }
   ];
 
   testCases.forEach((row, index) => {
-    it(`calculates test case ${index} correctly`, async function() {
+    it(`calculates test case ${index} correctly`, async () => {
       const promises = [];
       for (let i=0; i<row.repeat-1; i++) {
         promises.push(this.limiter.limit({
@@ -169,7 +241,7 @@ describe('RedisGCRA', function() {
     });
   });
 
-  it('should not modify when using peek', async function() {
+  it('should not modify when using peek', async () => {
     (await Promise.all([
       this.limiter.peek({ key: 'key1' }),
       this.limiter.peek({ key: 'key1' }),
@@ -189,7 +261,6 @@ describe('RedisGCRA', function() {
       result.remaining.should.equal(59);
       result.resetIn.should.be.within(980, 1000);
     });
-
   });
 
 });
