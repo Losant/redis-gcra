@@ -16,6 +16,40 @@ describe('RedisGCRA', () => {
     return this.redis.flushdb();
   });
 
+  it('should not round your tokens', async () => {
+    const opts = { key: 'testKey', burst: 1, rate: 1, period: 1000, cost: 1 };
+    let result = await this.limiter.limit(opts);
+    result.limited.should.equal(false);
+    result.remaining.should.equal(0);
+    result.retryIn.should.equal(0);
+    result.resetIn.should.be.within(990, 1000);
+
+    await new Promise((fulfill) => {
+      setTimeout(fulfill, result.resetIn * 0.75); // wait 3/4 of the time
+    });
+
+    result = await this.limiter.limit(opts);
+    result.limited.should.equal(true);
+    result.remaining.should.equal(0);
+    result.retryIn.should.be.within(100, 250);
+    result.resetIn.should.be.within(100, 250);
+
+    result = await this.limiter.peek(opts);
+    result.limited.should.equal(true);
+    result.remaining.should.equal(0);
+    result.resetIn.should.be.within(100, 250);
+
+    await new Promise((fulfill) => {
+      setTimeout(fulfill, result.resetIn); // wait the rest of the time
+    });
+
+    result = await this.limiter.limit(opts);
+    result.limited.should.equal(false);
+    result.remaining.should.equal(0);
+    result.retryIn.should.equal(0);
+    result.resetIn.should.be.within(990, 1000);
+  });
+
   it('should perform basic limit and regen', async () => {
     const opts = { key: 'testKey', burst: 4, rate: 1, period: 500, cost: 2 };
     let result = await this.limiter.limit(opts);

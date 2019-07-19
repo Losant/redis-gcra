@@ -2,6 +2,14 @@
 
 ***
 
+## 0.2.0 - 2019-07-18
+
+- Stop rounding remaining tokens
+- Update development/test dependencies
+- Add Node 11 & 12 to travis.yml
+
+***
+
 ## 0.1.1 - 2018-10-22
 
 - Update development/test dependencies

@@ -26,14 +26,14 @@ local limited
 local retry_in
 local reset_in
 
-local remaining = math.floor(diff / emission_interval + 0.5) -- poor man's round
+local remaining = math.floor(diff / emission_interval) -- poor man's round
 
 if remaining < 0 then
   limited = 1
   -- calculate how many tokens there actually are, since
   -- remaining is how many there would have been if we had been able to limit
   -- and we did not limit
-  remaining = math.floor((now - (tat - burst_offset)) / emission_interval + 0.5)
+  remaining = math.floor((now - (tat - burst_offset)) / emission_interval)
   reset_in = math.ceil(tat - now)
   retry_in = math.ceil(diff * -1)
 elseif remaining == 0 and increment <= 0 then
