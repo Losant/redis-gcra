@@ -2,6 +2,12 @@
 
 ***
 
+## Unreleased
+
+- Update development/test dependencies
+- Add Node 13 to travis.yml
+- Remove Node 8 and 9 from travis.yml (since mocha/eslint no longer supports them)
+
 ## 0.2.0 - 2019-07-18
 
 - Stop rounding remaining tokens
