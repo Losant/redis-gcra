@@ -32,6 +32,8 @@ yarn install redis-gcra
 ### RedisGCRA({ redis, keyPrefix, burst, rate, period, cost })
 
 ```javascript
+const RedisGCRA = require('redis-gcra');
+
 const limiter = RedisGCRA({
   redis: undefined,
   keyPrefix: '',
