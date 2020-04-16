@@ -50,6 +50,39 @@ describe('RedisGCRA', () => {
     result.resetIn.should.be.within(990, 1000);
   });
 
+  it('should actually expire the key from redis', async () => {
+    (await this.redis.exists('testKey')).should.equal(0);
+
+    let peekResult = await this.limiter.peek({
+      key: 'testKey', burst: 1, rate: 1, period: 500, cost: 1
+    });
+    peekResult.limited.should.equal(false);
+
+    (await this.redis.exists('testKey')).should.equal(0);
+
+    const opts = { key: 'testKey', burst: 1, rate: 1, period: 500, cost: 1 };
+    const result = await this.limiter.limit(opts);
+    result.limited.should.equal(false);
+    result.remaining.should.equal(0);
+    result.retryIn.should.equal(0);
+    result.resetIn.should.be.within(490, 500);
+
+    (await this.redis.exists('testKey')).should.equal(1);
+
+    await new Promise((fulfill) => {
+      setTimeout(fulfill, result.resetIn);
+    });
+
+    (await this.redis.exists('testKey')).should.equal(0);
+
+    peekResult = await this.limiter.peek({
+      key: 'testKey', burst: 1, rate: 1, period: 500, cost: 1
+    });
+    peekResult.limited.should.equal(false);
+
+    (await this.redis.exists('testKey')).should.equal(0);
+  });
+
   it('should perform basic limit and regen', async () => {
     const opts = { key: 'testKey', burst: 4, rate: 1, period: 500, cost: 2 };
     let result = await this.limiter.limit(opts);

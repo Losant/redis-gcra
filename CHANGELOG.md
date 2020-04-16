@@ -2,11 +2,12 @@
 
 ***
 
-## Unreleased
+## 0.3.0 - 2020-04-16
 
+- Fix issue where the TTL of the key (which is in milliseconds) was getting treated as a TTL in seconds for redis expiration
 - Update development/test dependencies
 - Add Node 13 to travis.yml
-- Remove Node 8 and 9 from travis.yml (since mocha/eslint no longer supports them)
+- Remove support for Node 8 and 9, and remove Node 8 and 9 from travis.yml (since mocha/eslint no longer supports them).
 
 ## 0.2.0 - 2019-07-18
 
