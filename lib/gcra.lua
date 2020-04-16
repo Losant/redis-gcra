@@ -48,7 +48,7 @@ else
   reset_in = math.ceil(new_tat - now)
   retry_in = 0
   if increment > 0 then
-    redis.call("SET", rate_limit_key, new_tat, "EX", reset_in)
+    redis.call("SET", rate_limit_key, new_tat, "PX", reset_in)
   end
 end
 
