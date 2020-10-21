@@ -2,7 +2,7 @@
 
 ***
 
-## 0.3.1 - 2020-04-16
+## 0.3.1 - 2020-10-21
 
 - Update development/test dependencies.
 - Add Node 14 and 15 to travis.yml.
