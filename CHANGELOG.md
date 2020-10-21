@@ -2,6 +2,12 @@
 
 ***
 
+## 0.3.1 - 2020-04-16
+
+- Update development/test dependencies.
+- Add Node 14 and 15 to travis.yml.
+- Fix a few minor linting issues.
+
 ## 0.3.0 - 2020-04-16
 
 - Fix issue where the TTL of the key (which is in milliseconds) was getting treated as a TTL in seconds for redis expiration
