@@ -1,6 +1,15 @@
-# Edge Agent Changelog
+# Redis GCRA Changelog
 
 ***
+
+## 0.4.0 - 2022-10-12
+
+- Update development/test dependencies.
+- Add support for ioredis 5.
+- Drop support for ioredis 2 and 3.
+- Add Node 16, 17, 18 to travis.yml.
+- Remove Node 10, 13, and 15 from travis.yaml.
+- Drop support for Node 10.
 
 ## 0.3.1 - 2020-10-21
 
