@@ -21,7 +21,7 @@
     "lib": "./lib"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=14"
   },
   "scripts": {
     "lint": "esw . --ext .js",
@@ -30,7 +30,8 @@
     "lint:changed": "lint-staged",
     "test": "mocha test 2>&1",
     "test:watch": "mocha --watch test 2>&1",
-    "reinstall": "rm -rf node_modules && yarn install"
+    "reinstall": "rm -rf node_modules && yarn install",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -44,18 +45,13 @@
   },
   "devDependencies": {
     "@losant/eslint-config-losant": "^1.4.4",
-    "husky": "^4.3.0",
+    "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
-    "mocha": "^9.2.2",
+    "mocha": "^10.0.0",
     "should": "^13.2.3"
   },
   "eslintConfig": {
     "extends": "@losant/eslint-config-losant/env/node"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "mocha": {
     "reporter": "spec",
