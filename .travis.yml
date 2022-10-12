@@ -1,9 +1,9 @@
 language: node_js
-node_js:
-  - "15"
-  - "14"
-  - "13"
-  - "12"
-  - "10"
+jobs:
+  include:
+  - dist: focal
+    node_js: '18'
+  - node_js: '16'
+  - node_js: '14'
 services:
   - redis-server

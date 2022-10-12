@@ -1,6 +1,6 @@
 {
   "name": "redis-gcra",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Rate limiting based on Generic Cell Rate Algorithm",
   "main": "lib/index.js",
   "homepage": "https://github.com/Losant/redis-gcra#readme",
@@ -21,7 +21,7 @@
     "lib": "./lib"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=14"
   },
   "scripts": {
     "lint": "esw . --ext .js",
@@ -30,7 +30,8 @@
     "lint:changed": "lint-staged",
     "test": "mocha test 2>&1",
     "test:watch": "mocha --watch test 2>&1",
-    "reinstall": "rm -rf node_modules && yarn install"
+    "reinstall": "rm -rf node_modules && yarn install",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -40,22 +41,17 @@
     "*.js": "esw"
   },
   "dependencies": {
-    "ioredis": ">=2.0.0 <5.0.0"
+    "ioredis": ">=4.0.0 <6.0.0"
   },
   "devDependencies": {
-    "@losant/eslint-config-losant": "^1.4.0",
-    "husky": "^4.3.0",
-    "lint-staged": "^10.4.2",
-    "mocha": "^8.2.0",
+    "@losant/eslint-config-losant": "^1.4.4",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "mocha": "^10.0.0",
     "should": "^13.2.3"
   },
   "eslintConfig": {
     "extends": "@losant/eslint-config-losant/env/node"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "mocha": {
     "reporter": "spec",
