@@ -1,7 +1,7 @@
 const Redis     = require('ioredis');
 const RedisGCRA = require('../lib');
 
-describe('RedisGCRA', () => {
+describe('ioRedis-RedisGCRA', () => {
   before(() => {
     this.redis = new Redis({ db: 4 });
     this.redis.on('error', (err) => { throw err; });
