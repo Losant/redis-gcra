@@ -41,10 +41,10 @@
     "*.js": "esw"
   },
   "devDependencies": {
-    "@losant/eslint-config-losant": "^1.4.4",
-    "husky": "^8.0.1",
-    "lint-staged": "^13.0.3",
-    "mocha": "^10.0.0",
+    "@losant/eslint-config-losant": "^1.6.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.0",
+    "mocha": "^10.2.0",
     "should": "^13.2.3",
     "ioredis": ">=4.0.0 <6.0.0",
     "redis": ">=4.1.0"

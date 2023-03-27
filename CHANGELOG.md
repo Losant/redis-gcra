@@ -1,9 +1,12 @@
 # Redis GCRA Changelog
 
 ***
+
 ## 0.5.0 - 2023-03-27
 
-- Add support for node-redis
+- Add support for node-redis.
+- Add Node 19 to travis.yml.
+- Update development/test dependencies.
 
 ## 0.4.0 - 2022-10-12
 
