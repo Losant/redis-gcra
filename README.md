@@ -141,7 +141,24 @@ The `reset` call returns a [Promise](https://developer.mozilla.org/en-US/docs/We
 
 ## Node-redis usage
 
-To use this module with [node-redis](https://www.npmjs.com/package/redis), you must include the following `scripts` definition in your `createClient` configuration:
+To use this module with [node-redis](https://www.npmjs.com/package/redis), you must include the include the exported `RedisGCRA.defineNodeRedisScripts` script as part of the `scripts` definition in your `createClient` configuration:
+
+```js
+const Redis = require('redis');
+const RedisGCRA = require('redis-gcra');
+
+const redis = Redis.createClient({
+      scripts: {
+        ...RedisGCRA.defineNodeRedisScripts(Redis),
+        /* other custom user scripts defined here */
+      }
+    });
+const limiter = RedisGCRA({ redis });
+
+(...)
+```
+
+If you would like to otherwise customize the provided script definition, you can also import the LUA and customize the script definition further (for example, for usage with Typescript).
 
 ```js
 const Redis = require('redis');
@@ -161,6 +178,7 @@ const redis = Redis.createClient({
     })
   }
 });
+
 const limiter = RedisGCRA({ redis });
 
 (...)
