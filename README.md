@@ -11,6 +11,7 @@ This module is an implementation of [GCRA](https://en.wikipedia.org/wiki/Generic
     * [limit](#limit-key-burst-rate-period-cost-)
     * [peek](#peek-key-burst-rate-period-)
     * [reset](#reset)
+* [Node-redis usage](#node-redis-usage)
 * [Example](#example)
 * [Inspiration](#inspiration)
 * [License](#license)
@@ -49,7 +50,7 @@ It takes the following options:
 
 | Option | Type | Default | Description |
 | :----- | :--- | ------- | :---------- |
-| redis | [ioredis](https://www.npmjs.com/package/ioredis) instance* | | **Required.** The Redis client to be used. _(* You may also use a Redis-client-like wrapper that exposes the [defineCommand](https://www.npmjs.com/package/ioredis#lua-scripting) method and the Redis `del` method.)_ |
+| redis | [ioredis](https://www.npmjs.com/package/ioredis) or [node-redis](https://www.npmjs.com/package/redis) instance* | | **Required.** The Redis client to be used. _(* If you use node-redis, additional setup work is required; see below. You may also use a Redis-client-like wrapper that exposes the [defineCommand](https://www.npmjs.com/package/ioredis#lua-scripting) method and the Redis `del` method.)_ |
 | keyPrefix | String | | A prefix for any keys that this limiter instance tries to create/access. |
 | burst | Number | 60 | The default burst value for this limiter instance. If provided, must be a number greater than or equal to 1. |
 | rate | Number | 1 | The default rate value for this limiter instance. If provided, must be a number greater than or equal to 1. |
@@ -137,6 +138,51 @@ available. It takes the following options:
 | key | String | **Required.** The limiter key to reset. The actual Redis key will be prefixed with any `keyPrefix` given when the limiter was created. |
 
 The `reset` call returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise), which will resolve to a Boolean. If the result is `true`, the key was reset. If the result is `false`, the key did not need to be reset; there were already `burst` tokens available.
+
+## Node-redis usage
+
+To use this module with [node-redis](https://www.npmjs.com/package/redis), you must include the include the exported `RedisGCRA.defineNodeRedisScripts` script as part of the `scripts` definition in your `createClient` configuration:
+
+```js
+const Redis = require('redis');
+const RedisGCRA = require('redis-gcra');
+
+const redis = Redis.createClient({
+      scripts: {
+        ...RedisGCRA.defineNodeRedisScripts(Redis),
+        /* other custom user scripts defined here */
+      }
+    });
+const limiter = RedisGCRA({ redis });
+
+(...)
+```
+
+If you would like to otherwise customize the provided script definition, you can also import the LUA and customize the script definition further (for example, for usage with Typescript).
+
+```js
+const Redis = require('redis');
+const RedisGCRA = require('redis-gcra');
+
+const redis = Redis.createClient({
+  scripts: {
+    performGcraRateLimit: Redis.defineScript({
+      NUMBER_OF_KEYS: 1,
+      SCRIPT: RedisGCRA.GCRA_LUA,
+      transformArguments(key, now, burst, rate, period, cost) {
+        return [key, now.toString(), burst.toString(), rate.toString(), period.toString(), cost.toString()];
+      },
+      transformReply(reply) {
+        return reply;
+      }
+    })
+  }
+});
+
+const limiter = RedisGCRA({ redis });
+
+(...)
+```
 
 ## Example
 
