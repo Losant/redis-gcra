@@ -5,16 +5,7 @@ describe('Node-Redis-RedisGCRA', () => {
   before(async () => {
     this.redis = Redis.createClient({
       scripts: {
-        performGcraRateLimit: Redis.defineScript({
-          NUMBER_OF_KEYS: 1,
-          SCRIPT: RedisGCRA.GCRA_LUA,
-          transformArguments(key, now, burst, rate, period, cost) {
-            return [key, now.toString(), burst.toString(), rate.toString(), period.toString(), cost.toString()];
-          },
-          transformReply(reply) {
-            return reply;
-          }
-        })
+        ...RedisGCRA.defineNodeRedisScripts(Redis),
       }
     });
     await this.redis.connect();
