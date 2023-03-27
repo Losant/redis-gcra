@@ -2,6 +2,8 @@ language: node_js
 jobs:
   include:
   - dist: focal
+    node_js: '19'
+  - dist: focal
     node_js: '18'
   - node_js: '16'
   - node_js: '14'

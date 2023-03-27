@@ -4,9 +4,7 @@ const Redis = require('redis');
 const RedisGCRA = require('../lib');
 
 const redis = Redis.createClient({
-  scripts: {
-    ...RedisGCRA.defineNodeRedisScripts(Redis),
-  }
+  scripts: RedisGCRA.defineNodeRedisScripts(Redis)
 });
 
 redis.connect();
