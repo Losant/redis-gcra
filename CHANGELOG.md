@@ -1,6 +1,9 @@
 # Redis GCRA Changelog
 
 ***
+## 0.5.0 - 2023-03-27
+
+- Add support for node-redis
 
 ## 0.4.0 - 2022-10-12
 
