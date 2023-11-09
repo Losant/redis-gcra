@@ -3,6 +3,7 @@
   "version": "0.5.0",
   "description": "Rate limiting based on Generic Cell Rate Algorithm",
   "main": "lib/index.js",
+  "types": "index.d.ts",
   "homepage": "https://github.com/Losant/redis-gcra#readme",
   "author": "Losant <hello@losant.com>",
   "license": "MIT",
