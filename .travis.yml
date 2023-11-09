@@ -7,7 +7,5 @@ jobs:
     node_js: '20'
   - dist: focal
     node_js: '18'
-  - node_js: '16'
-  - node_js: '14'
 services:
   - redis-server

@@ -5,7 +5,7 @@
 ## 0.5.1 - 2023-11-09
 
 - Add type definitions.
-- Add Node 20 and 21 to travis.yml, remove 19.
+- Add Node 20 and 21 to travis.yml, remove 19, 16, 14.
 - Update development/test dependencies.
 
 ## 0.5.0 - 2023-03-27
