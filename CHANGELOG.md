@@ -2,6 +2,12 @@
 
 ***
 
+## 0.5.2 - 2024-08-29
+
+- Switch from Travis to Github Actions.
+- Add Node 22 to test suite.
+- Update development/test dependencies.
+
 ## 0.5.1 - 2023-11-09
 
 - Add type definitions.

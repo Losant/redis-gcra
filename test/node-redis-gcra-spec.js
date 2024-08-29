@@ -4,7 +4,8 @@ const RedisGCRA = require('../lib');
 describe('Node-Redis-RedisGCRA', () => {
   before(async () => {
     this.redis = Redis.createClient({
-      scripts: RedisGCRA.defineNodeRedisScripts(Redis)
+      scripts: RedisGCRA.defineNodeRedisScripts(Redis),
+      url: `redis://@${process.env.REDIS_HOST || 'localhost'}/4`
     });
     await this.redis.connect();
     this.redis.on('error', (err) => { throw err; });

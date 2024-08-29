@@ -1,0 +1,40 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: ['opened', 'reopened', 'synchronize']
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        nodejs: [ '18', '20', '21', '22' ]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: write
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+    - name: Cancel Previous Runs
+      uses: styfle/cancel-workflow-action@0.11.0
+      with:
+        access_token: ${{ github.token }}
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.nodejs }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.nodejs }}
+    - run: yarn install --frozen-lockfile
+    - run: yarn test

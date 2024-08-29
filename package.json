@@ -1,6 +1,6 @@
 {
   "name": "redis-gcra",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Rate limiting based on Generic Cell Rate Algorithm",
   "main": "lib/index.js",
   "types": "index.d.ts",
@@ -31,8 +31,7 @@
     "lint:changed": "lint-staged",
     "test": "mocha test 2>&1",
     "test:watch": "mocha --watch test 2>&1",
-    "reinstall": "rm -rf node_modules && yarn install",
-    "prepare": "husky install"
+    "reinstall": "rm -rf node_modules && yarn install"
   },
   "repository": {
     "type": "git",
@@ -43,9 +42,9 @@
   },
   "devDependencies": {
     "@losant/eslint-config-losant": "^1.6.1",
-    "husky": "^8.0.3",
-    "lint-staged": "^15.0.2",
-    "mocha": "^10.2.0",
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.9",
+    "mocha": "^10.7.3",
     "should": "^13.2.3",
     "ioredis": ">=4.0.0 <6.0.0",
     "redis": ">=4.1.0 <5.0.0"
