@@ -37,4 +37,7 @@ jobs:
       with:
         node-version: ${{ matrix.nodejs }}
     - run: yarn install --frozen-lockfile
-    - run: yarn test
+    - name: 'Run Tests'
+      run: yarn test
+      env:
+        REDIS_HOST: redis
