@@ -3,7 +3,7 @@ const RedisGCRA = require('../lib');
 
 describe('ioRedis-RedisGCRA', () => {
   before(() => {
-    this.redis = new Redis({ db: 4 });
+    this.redis = new Redis({ db: 4, host: process.env.REDIS_HOST || 'localhost' });
     this.redis.on('error', (err) => { throw err; });
     this.limiter = RedisGCRA({ redis: this.redis });
   });
