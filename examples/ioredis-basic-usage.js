@@ -1,7 +1,7 @@
 /*eslint no-console: 0*/
 
-const Redis     = require('ioredis');
-const RedisGCRA = require('../lib');
+import { Redis } from 'ioredis';
+import RedisGCRA from '../lib/index.js';
 
 const redis   = new Redis();
 const limiter = RedisGCRA({ redis });

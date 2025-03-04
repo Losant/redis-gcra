@@ -1,24 +1,25 @@
-const Redis     = require('ioredis');
-const RedisGCRA = require('../lib');
+import { Redis } from 'ioredis';
+import RedisGCRA from '../lib/index.js';
 
 describe('ioRedis-RedisGCRA', () => {
+  let redis, limiter;
   before(() => {
-    this.redis = new Redis({ db: 4, host: process.env.REDIS_HOST || 'localhost' });
-    this.redis.on('error', (err) => { throw err; });
-    this.limiter = RedisGCRA({ redis: this.redis });
+    redis = new Redis({ db: 4, host: process.env.REDIS_HOST || 'localhost' });
+    redis.on('error', (err) => { throw err; });
+    limiter = RedisGCRA({ redis });
   });
 
   after(() => {
-    return this.redis.quit();
+    return redis.quit();
   });
 
   beforeEach(() => {
-    return this.redis.flushdb();
+    return redis.flushdb();
   });
 
   it('should not round your tokens', async () => {
     const opts = { key: 'testKey', burst: 1, rate: 1, period: 1000, cost: 1 };
-    let result = await this.limiter.limit(opts);
+    let result = await limiter.limit(opts);
     result.limited.should.equal(false);
     result.remaining.should.equal(0);
     result.retryIn.should.equal(0);
@@ -28,13 +29,13 @@ describe('ioRedis-RedisGCRA', () => {
       setTimeout(fulfill, result.resetIn * 0.75); // wait 3/4 of the time
     });
 
-    result = await this.limiter.limit(opts);
+    result = await limiter.limit(opts);
     result.limited.should.equal(true);
     result.remaining.should.equal(0);
     result.retryIn.should.be.within(100, 250);
     result.resetIn.should.be.within(100, 250);
 
-    result = await this.limiter.peek(opts);
+    result = await limiter.peek(opts);
     result.limited.should.equal(true);
     result.remaining.should.equal(0);
     result.resetIn.should.be.within(100, 250);
@@ -43,7 +44,7 @@ describe('ioRedis-RedisGCRA', () => {
       setTimeout(fulfill, result.resetIn); // wait the rest of the time
     });
 
-    result = await this.limiter.limit(opts);
+    result = await limiter.limit(opts);
     result.limited.should.equal(false);
     result.remaining.should.equal(0);
     result.retryIn.should.equal(0);
@@ -51,59 +52,59 @@ describe('ioRedis-RedisGCRA', () => {
   });
 
   it('should actually expire the key from redis', async () => {
-    (await this.redis.exists('testKey')).should.equal(0);
+    (await redis.exists('testKey')).should.equal(0);
 
-    let peekResult = await this.limiter.peek({
+    let peekResult = await limiter.peek({
       key: 'testKey', burst: 1, rate: 1, period: 500, cost: 1
     });
     peekResult.limited.should.equal(false);
 
-    (await this.redis.exists('testKey')).should.equal(0);
+    (await redis.exists('testKey')).should.equal(0);
 
     const opts = { key: 'testKey', burst: 1, rate: 1, period: 500, cost: 1 };
-    const result = await this.limiter.limit(opts);
+    const result = await limiter.limit(opts);
     result.limited.should.equal(false);
     result.remaining.should.equal(0);
     result.retryIn.should.equal(0);
     result.resetIn.should.be.within(490, 500);
 
-    (await this.redis.exists('testKey')).should.equal(1);
+    (await redis.exists('testKey')).should.equal(1);
 
     await new Promise((fulfill) => {
       setTimeout(fulfill, result.resetIn);
     });
 
-    (await this.redis.exists('testKey')).should.equal(0);
+    (await redis.exists('testKey')).should.equal(0);
 
-    peekResult = await this.limiter.peek({
+    peekResult = await limiter.peek({
       key: 'testKey', burst: 1, rate: 1, period: 500, cost: 1
     });
     peekResult.limited.should.equal(false);
 
-    (await this.redis.exists('testKey')).should.equal(0);
+    (await redis.exists('testKey')).should.equal(0);
   });
 
   it('should perform basic limit and regen', async () => {
     const opts = { key: 'testKey', burst: 4, rate: 1, period: 500, cost: 2 };
-    let result = await this.limiter.limit(opts);
+    let result = await limiter.limit(opts);
     result.limited.should.equal(false);
     result.remaining.should.equal(2);
     result.retryIn.should.equal(0);
     result.resetIn.should.be.within(990, 1000);
 
-    result = await this.limiter.limit(opts);
+    result = await limiter.limit(opts);
     result.limited.should.equal(false);
     result.remaining.should.equal(0);
     result.retryIn.should.equal(0);
     result.resetIn.should.be.within(1980, 2000);
 
-    result = await this.limiter.limit(opts);
+    result = await limiter.limit(opts);
     result.limited.should.equal(true);
     result.remaining.should.equal(0);
     result.retryIn.should.be.within(870, 1000);
     result.resetIn.should.be.within(1970, 2000);
 
-    const peekResult = await this.limiter.peek({
+    const peekResult = await limiter.peek({
       key: 'testKey', burst: 2, rate: 1, period: 1000
     });
     peekResult.limited.should.equal(true);
@@ -115,7 +116,7 @@ describe('ioRedis-RedisGCRA', () => {
       setTimeout(fulfill, result.retryIn - 500);
     });
 
-    result = await this.limiter.limit(opts);
+    result = await limiter.limit(opts);
     result.limited.should.equal(true);
     result.remaining.should.equal(1);
     result.retryIn.should.be.within(450, 1000);
@@ -126,7 +127,7 @@ describe('ioRedis-RedisGCRA', () => {
       setTimeout(fulfill, result.retryIn);
     });
 
-    result = await this.limiter.limit(opts);
+    result = await limiter.limit(opts);
     result.limited.should.equal(false);
     result.remaining.should.equal(0);
     result.retryIn.should.equal(0);
@@ -135,9 +136,9 @@ describe('ioRedis-RedisGCRA', () => {
 
   it('limits different keys independently', async () => {
     const results = await Promise.all([
-      this.limiter.limit({ key: 'key1' }),
-      this.limiter.limit({ key: 'key2' }),
-      this.limiter.limit({ key: 'key1' })
+      limiter.limit({ key: 'key1' }),
+      limiter.limit({ key: 'key2' }),
+      limiter.limit({ key: 'key1' })
     ]);
 
     const key2Result = results[1];
@@ -166,9 +167,9 @@ describe('ioRedis-RedisGCRA', () => {
   });
 
   it('respects key prefixes and defaults', async () => {
-    const prefixed = RedisGCRA({ redis: this.redis, keyPrefix: 'hello', cost: 5 });
+    const prefixed = RedisGCRA({ redis: redis, keyPrefix: 'hello', cost: 5 });
 
-    let key1Result = await this.limiter.limit({ key: 'key1' });
+    let key1Result = await limiter.limit({ key: 'key1' });
     key1Result.limited.should.equal(false);
     key1Result.remaining.should.equal(59);
     key1Result.retryIn.should.equal(0);
@@ -185,7 +186,7 @@ describe('ioRedis-RedisGCRA', () => {
     reset1.should.be.true();
     reset2.should.be.false();
 
-    key1Result = await this.limiter.peek({ key: 'key1' });
+    key1Result = await limiter.peek({ key: 'key1' });
     key1Result.limited.should.equal(false);
     key1Result.remaining.should.equal(59);
     key1Result.resetIn.should.be.within(980, 1000);
@@ -283,7 +284,7 @@ describe('ioRedis-RedisGCRA', () => {
     it(`calculates test case ${index} correctly`, async () => {
       const promises = [];
       for (let i=0; i<row.repeat-1; i++) {
-        promises.push(this.limiter.limit({
+        promises.push(limiter.limit({
           key: 'testCase',
           burst: row.burst,
           rate: row.rate,
@@ -294,7 +295,7 @@ describe('ioRedis-RedisGCRA', () => {
 
       await Promise.all(promises);
 
-      const finalResult = await this.limiter.limit({
+      const finalResult = await limiter.limit({
         key: 'testCase',
         burst: row.burst,
         rate: row.rate,
@@ -310,19 +311,19 @@ describe('ioRedis-RedisGCRA', () => {
 
   it('should not modify when using peek', async () => {
     (await Promise.all([
-      this.limiter.peek({ key: 'key1' }),
-      this.limiter.peek({ key: 'key1' }),
-      this.limiter.peek({ key: 'key1' })
+      limiter.peek({ key: 'key1' }),
+      limiter.peek({ key: 'key1' }),
+      limiter.peek({ key: 'key1' })
     ])).forEach((result) => {
       result.should.deepEqual({ limited: false, remaining: 60, resetIn: 0 });
     });
 
-    await this.limiter.limit({ key: 'key1' });
+    await limiter.limit({ key: 'key1' });
 
     (await Promise.all([
-      this.limiter.peek({ key: 'key1' }),
-      this.limiter.peek({ key: 'key1' }),
-      this.limiter.peek({ key: 'key1' })
+      limiter.peek({ key: 'key1' }),
+      limiter.peek({ key: 'key1' }),
+      limiter.peek({ key: 'key1' })
     ])).forEach((result) => {
       result.limited.should.equal(false);
       result.remaining.should.equal(59);

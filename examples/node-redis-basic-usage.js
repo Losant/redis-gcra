@@ -1,7 +1,7 @@
 /*eslint no-console: 0*/
 
-const Redis = require('redis');
-const RedisGCRA = require('../lib');
+import * as Redis from 'redis';
+import RedisGCRA from '../lib/index.js';
 
 const redis = Redis.createClient({
   scripts: RedisGCRA.defineNodeRedisScripts(Redis)
