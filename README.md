@@ -33,7 +33,7 @@ yarn install redis-gcra
 ### RedisGCRA({ redis, keyPrefix, burst, rate, period, cost })
 
 ```javascript
-const RedisGCRA = require('redis-gcra');
+import RedisGCRA from 'redis-gcra';
 
 const limiter = RedisGCRA({
   redis: undefined,
@@ -144,8 +144,8 @@ The `reset` call returns a [Promise](https://developer.mozilla.org/en-US/docs/We
 To use this module with [node-redis](https://www.npmjs.com/package/redis), you must include the include the exported `RedisGCRA.defineNodeRedisScripts` script as part of the `scripts` definition in your `createClient` configuration:
 
 ```js
-const Redis = require('redis');
-const RedisGCRA = require('redis-gcra');
+import * as Redis from 'redis';
+import RedisGCRA from 'redis-gcra';
 
 const redis = Redis.createClient({
       scripts: {
@@ -161,8 +161,8 @@ const limiter = RedisGCRA({ redis });
 If you would like to otherwise customize the provided script definition, you can also import the LUA and customize the script definition further (for example, for usage with Typescript).
 
 ```js
-const Redis = require('redis');
-const RedisGCRA = require('redis-gcra');
+import * as Redis from 'redis';
+import RedisGCRA from 'redis-gcra';
 
 const redis = Redis.createClient({
   scripts: {
@@ -190,8 +190,8 @@ In this example the rate limit bucket has 1000 tokens, recovering at
 a speed of 1 token per second.
 
 ```js
-const Redis     = require('ioredis');
-const RedisGCRA = require('redis-gcra');
+import { Redis } from 'io-redis';
+import RedisGCRA from 'redis-gcra';
 
 const redis = new Redis();
 const limiter = RedisGCRA({ redis });

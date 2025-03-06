@@ -2,6 +2,13 @@
 
 ***
 
+## 0.6.0 - 2025-03-04
+
+- Add Node 23 to test suite.
+- Update development/test dependencies.
+- Drop support for Node 14, 16, and 18.
+- Switch to ESM.
+
 ## 0.5.2 - 2024-08-29
 
 - Switch from Travis to Github Actions.
