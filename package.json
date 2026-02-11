@@ -25,6 +25,7 @@
   "engines": {
     "node": ">=20"
   },
+  "packageManager": "pnpm@10.29.3",
   "scripts": {
     "lint": "eslint . --ext .js",
     "lint:fix": "pnpm lint --fix",
