@@ -22,12 +22,6 @@ This module is an implementation of [GCRA](https://en.wikipedia.org/wiki/Generic
 npm install redis-gcra
 ```
 
-or
-
-```bash
-yarn install redis-gcra
-```
-
 ## API Documentation
 
 ### RedisGCRA({ redis, keyPrefix, burst, rate, period, cost })

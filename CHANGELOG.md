@@ -2,6 +2,12 @@
 
 ***
 
+## 0.7.0 - 2026-02-11
+
+- Add Node 24 and Node 25 to test suite.
+- Update development/test dependencies.
+- Switch from yarn to pnpm.
+
 ## 0.6.0 - 2025-03-04
 
 - Add Node 23 to test suite.
